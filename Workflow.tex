@@ -1,10 +1,13 @@
 \documentclass[]{article}
+\title{Workflow}
 \begin{document}
-
+\maketitle
 \section{Initial Stages}
 \begin{itemize}
 \item Folder HSE\_BMI\_analysis within DPhil folder. COPIED some things from MPhil R work to this folder. Associated R project and Git, linked to GitHub. Still need to move over raw data and scripts that actually use the data + the functions.
-\item Next thing to do: figure out how the standard error bars are actually generated --- what's going on in there? Need to split out the functions of interest to establish this - separate scripts? Some of it is in write.functions.v2 but will also need the original Nielsen commented files (in inputs).
+\item Have established that the standard error lines are based on a manipulation of the estimated coefficients and covariances from a basic \texttt{glm.fit} that are performed within \texttt{apc.identify}. Two particular manipulations are of interest: that used to create the \texttt{ss.dd} group and that used to create the \texttt{detrend} group. Found an account in \textit{Identification.pdf} and also in \textit{Deviance Analysis of age-period-cohort Models} (latter less complete) which may account for the \texttt{detrend} manipulation.
+\item AGENDA: Establish what the two manipulations are doing. In particular in relation to detrending, (a) how is that achieved and (b) does it involve a more substantive theoretical restriction than did the choice of initial points? To help towards understanding the latter, want to adapt the code to allow for changes to the choice of initial points and investigate how the linear plane and fit are altered by this choice. Ideally would be able to create 3D representations. Need to do this anyway as part of code development.
+\item OTHER TASKS: LATEX figure out how to define a style class in the preamble (declare \textbackslash code environment and then use that throughout, and figure out what typeface to use later; might also want it for book titles). Investigate what happens when regressing a quadratic function on a line (Stata practice! Unfortunately I can't remember why I wanted to do that) and check that I can do the Poisson and binomial log-likelihood derivations (one parameter for ML only --- where would the dispersion parameter go?)
 \end{itemize}
 
 \end{document}
