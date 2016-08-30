@@ -1071,6 +1071,9 @@ var.apc.plot.fit	<- function(apc.fit.model,scale=FALSE,sdv.at.zero=TRUE,type="de
       y.lower	<- min(0,min(function.scale(est,scale)),max( 2*min(function.scale(est,scale)),max(function.scale(sdv0-sdv,scale),na.rm=TRUE) ))
       y.upper	<- max(0,max(function.scale(est,scale)),min( 2*max(function.scale(est,scale)),min(function.scale(sdv0-sdv,scale),na.rm=TRUE) ))
       ################
+      #	remove tick marks if intercept
+      xaxt="s"
+      if(intercept==TRUE)	xaxt <- "n"
       #	plot
       plot(dat,function.scale(est,scale),type="p",ann=FALSE, axes=FALSE,xaxt=xaxt,ylim=c(y.lower,y.upper),xlim=c(dat-1,dat+1),pch=19,cex.axis=cex.axis)
       if (intercept == FALSE) mtext(side = 1, text = xlab, line = mgp[1]  ,cex=cex.axis) 

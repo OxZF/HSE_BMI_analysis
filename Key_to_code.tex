@@ -3,6 +3,7 @@
 \begin{document}
 \maketitle
 
+The only input to \textt{var.apc.plot.fit} is \textt{apc.fit.indiv} so this is where we need to look to understand things.
 The following items come into \texttt{var.apc.plot.fit} from earlier parts of the code (via \texttt{apc.fit.indiv})
 \begin{itemize}
 \item To control the choice of submodel, use \texttt{slopes} and \texttt{difdif}. Each is a three-length binary vector.
@@ -31,6 +32,7 @@ The following elements are interior to \texttt{var.apc.plot.fit}
 \item All of the above are generated in a separate part of the code in the case that the type of plot requested is \texttt{dif} rather than \texttt{detrend} or \texttt{ssdd}. There are a few differences, the main substantive difference occurring in the definition of \texttt{l.coefficients}
 \item There is an internal function \texttt{function.plot.est.sdv} which is used for each subplot. Sets dates on the x-axis, coefficient estimates on the y-axis. Important things to note: \texttt{scale} which if not zero means that the standard deviations will be scaled exponentially before lines are drawn. Option \texttt{sdv.at.zero} which determines whether the standard deviation lines are plotted around the estimate or not. Standard deviation is taken to be the second column of \texttt{coefficients}. \texttt{tau} determines whether the standard error lines are shown at all (they are not under mixed parameterisation)
 \item As expected, it is \texttt{l.coefficients} that is used for the plotting
-
 \end{itemize}
+
+An account of the interior of \textt{apc.identify} can be found in the handwritten notes dated 30/08/16
 \end{document}
