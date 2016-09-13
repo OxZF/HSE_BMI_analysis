@@ -289,3 +289,57 @@ if(difdif[3])
   names.detrend	<- c(names.detrend,paste("SS_DD_cohort_",as.character((dates.max[index.coh.max,1])[i]),sep="")) }
 rownames(coefficients.ssdd	 )	<- names.ssdd		
 rownames(coefficients.detrend)	<- names.detrend
+
+#	get covariance matrix, noting that if using a mixed parametrisation
+#	top right block of m should be zero, to reflect that intercept is not changed
+if(mixed.par)
+{	m.ssdd[1,2:xi]			<- 0
+m.detrend[1,2:xi.max]	<- 0
+}
+covariance.ssdd		<- m.ssdd 	%*% covariance 			%*% t(m.ssdd   )
+covariance.detrend	<- m.detrend%*% covariance.ssdd 	%*% t(m.detrend)
+##############################
+#	get standard errors 
+coefficients.ssdd[,2]		<- sqrt(diag(covariance.ssdd   ))
+coefficients.detrend[,2]	<- sqrt(diag(covariance.detrend))
+#	set NA for ad hoc identified entries
+if(difdif[1])	coefficients.ssdd[   index.age.max,2][U:(U+1)]	<- NA
+if(difdif[2])	coefficients.ssdd[   index.per.max,2][(per.odd+1):(per.odd+2)]	<- NA
+if(difdif[3])	coefficients.ssdd[   index.coh.max,2][U:(U+1)]	<- NA
+if(difdif[1])	coefficients.detrend[index.age.max,2][c(1,age.max)]	<- NA                           
+if(difdif[2])	coefficients.detrend[index.per.max,2][c(1,per.max)]	<- NA   
+if(difdif[3])	coefficients.detrend[index.coh.max,2][c(1,coh.max)]	<- NA    
+######################
+#	get t-statistics & p-values
+function.get.t_and_p	<- function(coefficients)
+{
+  coefficients[,3]	<- coefficients[,1] / coefficients[,2]
+  coefficients[,4]	<- 2*pnorm(abs(coefficients[,3]),lower.tail=FALSE)
+  return(coefficients)
+}
+coefficients.ssdd		<- function.get.t_and_p(coefficients.ssdd	)
+coefficients.detrend	<- function.get.t_and_p(coefficients.detrend)
+
+#### The above is "it" in terms of main work ####
+# next up is demean, since is sub-models only I skip it
+# then diff
+##############################
+#	get linear transformation matrix for dif
+function.dif	<- function(n)
+  ##############################
+  #	BN, 3 dec 2013
+  #	in:		n			is the dimension of the block
+  #	Out		m			matrix dimension n-1 x n
+  #						for difference an n-vector
+{	#	function.dif
+  m	<- diag(n)
+  m[2:n,1:(n-1)]	<- m[2:n,1:(n-1)] - diag(n-1)	
+  return(m[2:n,1:n])
+}	#	function.dif
+#	declare transformation
+m.dif		<- NULL
+m.dif			<- matrix(data=0,nrow=xi.dif,ncol=xi.sub)
+m.dif[1:det.sub,1:det.sub]			<- diag(det.sub)
+m.dif[index.age.dif,index.age.sub]	<- function.dif(age.max)
+m.dif[index.per.dif,index.per.sub]	<- function.dif(per.max)
+m.dif[index.coh.dif,index.coh.sub]	<- function.dif(coh.max)

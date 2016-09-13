@@ -1,17 +1,51 @@
 \documentclass[]{article}
+
 \title{Workflow}
+\author{Zoe Fannon}
 \begin{document}
 \maketitle
 \section{Initial Stages}
 \begin{itemize}
-\item Folder HSE\_BMI\_analysis within DPhil folder. COPIED some things from MPhil R work to this folder. Associated R project and Git, linked to GitHub. Still need to move over raw data and scripts that actually use the data + the functions.
-\item Have established that the standard error lines are based on a manipulation of the estimated coefficients and covariances from a basic \texttt{glm.fit} that are performed within \texttt{apc.identify}. Two particular manipulations are of interest: that used to create the \texttt{ss.dd} group and that used to create the \texttt{detrend} group. Found an account in \textit{Identification.pdf} and also in \textit{Deviance Analysis of age-period-cohort Models} (latter less complete) which may account for the \texttt{detrend} manipulation.
-\item Have found that the core of the manipulations of estimates lies in \textt{function.ssdd} and \textt{m.ssdd}, and \textt{function.detrend} and \textt{m.detrend}, for the "sum.sum" and "detrend" plot representations respectively. The \textt{ssdd} elements generate the sums of double differences for each point on each dimension (out of A, P, and C). The \textt{detrend} elements are performing some form of detrending and reallocation of anchor points that I don't yet fully understand.
+\item Folder HSE\_BMI\_analysis within DPhil folder. COPIED some things from MPhil R work to this folder. Associated R project and Git, linked to GitHub. Still need to move over raw data and scripts that actually use the data + the functions. (Aug 2016)
+\end{itemize}
+\subsection{Standard Errors}
+\begin{itemize}
+\item OBJECTIVE: Know how the se lines on the graphs are constructed, and be able to explain clearly what the issue with them is.
 
-\item AGENDA: Establish what the two manipulations are doing. In particular in relation to detrending, (a) how is that achieved and (b) does it involve a more substantive theoretical restriction than did the choice of initial points? To help towards understanding the latter, want to adapt the code to allow for changes to the choice of initial points and investigate how the linear plane and fit are altered by this choice. Ideally would be able to create 3D representations. Need to do this anyway as part of code development.
-\item AGENDA: clear up a few questions around \textt{ssdd} elements, and then need to focus on understanding \textt{detrend} elements.
+\item Have established that the standard error lines are based on a manipulation of the estimated coefficients and covariances from a basic \texttt{glm.fit} that are performed within \texttt{apc.identify}. Two particular manipulations are of interest: that used to create the \texttt{ss.dd} group and that used to create the \texttt{detrend} group. Found an account in \textit{Identification.pdf} and also in \textit{Deviance Analysis of age-period-cohort Models} (latter less complete) which may account for the \texttt{detrend} manipulation. (Aug 2016)
+\item Have found that the core of the manipulations of estimates lies in \texttt{function.ssdd} and \texttt{m.ssdd}, and \texttt{function.detrend} and \texttt{m.detrend}, for the "sum.sum" and "detrend" plot representations respectively. The \texttt{ssdd} elements generate the sums of double differences for each point on each dimension (out of A, P, and C). The \texttt{detrend} elements are performing some form of detrending and reallocation of anchor points that I don't fully understand. (Aug 2016)
+\item The function \texttt{function.ssdd} creates a matrix which provides for both forward and backward cumulation, as seen in equation 2.8 of my thesis. This is applied separately to each of A, P, and C to generate the matrix \texttt{m.ssdd}. This matrix is multiplied by the estimates from the fit (which occurs prior to entering \texttt{apc.identify}) of the linear plane and double-differences, found in the stored \texttt{coefficients} matrix. The output is a matrix of estimates \texttt{coefficients.ssdd}: the linear plane and \emph{sums} of double-differences at each age/period/cohort (thus the output is longer than the input, which lacks double-differences at two of each of ages/periods/cohorts). The function \texttt{function.detrend} provides for the detrending of a series and its "anchoring" (i.e. points at which the value of the series is zero)  at the first elements of the series (rather than the middle). This is applied separately to each of A, P, and C to generate \texttt{m.detrend}. This is multiplied by \texttt{coefficients.ssdd} to get an output of \texttt{coefficients.detrend} which has estimates of the \emph{new} linear plane (with trends reallocated to the plane) and the \emph{new} sums of double-differences at each age/period/cohort. For each dimension in both \texttt{coefficients.detrend} and \texttt{coefficients.ssdd} two of the sums of double-differences in each dimension are zero (the anchoring points). (30/08/16)
+\item To get the standard errors in \texttt{coefficients.detrend} and \texttt{coefficients.ssdd}, the covariance from the original fit is pre- and post-multiplied by the either \texttt{m.detrend} or \texttt{m.ssdd}, and the square root of the diagonal of the resulting matrix is taken. Is this appropriate for calculating the standard error of a single sum of double differences? Having resolved the question re: single sum of double differences, is it appropriate to plot a confidence band as a series of these, or must we take into consideration that there are shared constituent components (01/09/16)
+\item On the single sum of double differences: for a cross-sectional model $ y_s = \beta_1 x_1s + \beta_2 x_2s + \beta_3 x_3s + \varepsilon_s = \beta_s X_s + \varepsilon_s$ where $s$ is the individual subscript, the OLS estimator can be written as \[ \sqrt{N}(\hat{\beta}-\beta_o)=\left(\frac{1}{N} \sum x_i x_i^\prime\right)^{-1} \left(\frac{1}{\sqrt{N}} \sum x_i \varepsilon_i\right) \] and shown to converge in distribution to $ N \left( 0, avar(\hat{\beta})\right) $ using an LLN, CLT, and Slutsky. Then if we consider $\hat{y_s}=\beta X_s^*$ for some chosen $X_s^*$ we get a very similar form for the OLS predictor but with $ X_s^* $ premultiplying the RHS. Then since $X_s^*$ is fixed, it trivially converges to itself and can just be added into the LLN so that we can again apply Slutsky and get a very similar convergence result - except with variance of $ X_s^* avar(\hat{\beta}) X_s^*\prime $. Then it seems that if we consider a sum of double differences to be comparable to a cross-sectional linear predictor, the matrix manipulation seen above should be allowable. (06/09/16)
+\item AGENDA: How does a sum of double-differences differ from this cross-sectional model? Time connection? Still also need to think about the series of sums of DDs.
+\item AGENDA: What exactly does \texttt{function.detrend} do, and why does that approach make sense? What adjustments are being made to the linear plane within \texttt{m.detrend}?
+\end{itemize}
+\subsection{Code Polishing}
+\begin{itemize}
+\item OBJECTIVE: two 
+\begin{itemize}
+\item Adapt the current code (in write.functions.v2) so that anyone else could use it easily to run a similar analysis to my BMI analysis
+\item Develop a code architecture for how the program should look over a longer time horizon/with more elements
+\end{itemize}
+
+\item Have begun cleaning process in \texttt{revising.functions.R} and \texttt{revised.functions.R} (the latter contains the functions, the former documents the process). Have semi-completed the first three; now need to make sure the changes implemented (mostly warnings/error messages) also appear in the ftest-type functions which build on them. There's a lot of bloating which should be cut. (13/09/16)
+\item Probably is worth re-starting from scratch. E.g. splitting of depvar choice across design and fit is poor; many things carried through unnecessarily; calling back to \texttt{apc.get.design.indiv.collinear} 30 times within the ftest functions is definitely not a good thing; want to make explicit (and ideally user-adjustable) the choice of initial points. (13/09/16)
+
+\item AGENDA: Adapt the code to allow for changes to the choice of initial points and investigate how the linear plane and fit are altered by this choice. Ideally would be able to create 3D representations. Need to do this anyway as part of code development.
 \item OTHER TASKS: LATEX figure out how to define a style class in the preamble (declare \textbackslash code environment and then use that throughout, and figure out what typeface to use later; might also want it for book titles). Investigate what happens when regressing a quadratic function on a line (Stata practice! Unfortunately I can't remember why I wanted to do that) and check that I can do the Poisson and binomial log-likelihood derivations (one parameter for ML only --- where would the dispersion parameter go?)
 \item CODE REVISION: what is datatype in apc.get.design.indiv.collinear? Also anywhere else that warnings are needed?
 \end{itemize}
+
+\subsection{BMI analysis}
+\begin{itemize}
+\item OBJECTIVE: produce a presentable version of the BMI analysis
+
+\item Have looked through existing material and established that the following are required to reproduce the thesis: \texttt{hse19952013.csv} (raw data); \texttt{dataprep\_educenddata.forthesis.R} (data cleaning); \texttt{thesis.data.csv} (clean data); \texttt{thesis\_example\_results.R} (produces data-based output); \texttt{thesis\_plots.R} (produces diagrams at beginning). (12/09/16)
+
+\item AGENDA: clean up running code from thesis so it's easy to reproduce everything in the thesis!
+
+
+\end{itemize}
+
 
 \end{document}
